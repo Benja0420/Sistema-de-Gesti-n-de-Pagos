@@ -5,14 +5,13 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class Dao {
-    private static final String URL = "jdbc:mysql://localhost/pagosbd";
+    /* private static final String URL = "jdbc:mysql://localhost/pagosbd";
     private static final String USUARIO = "root";
-    private static final String CLAVE = "";
+    private static final String CLAVE = ""; */
 
-    // Alternativa para conexión remota (comentada):
-    // private static final String URL = "jdbc:mysql://10.51.0.55:3306/pagosbd";
-    // private static final String USUARIO = "Alumnos";
-    // private static final String CLAVE = "alumnos2025";
+     private static final String URL = "jdbc:mysql://10.51.0.55:3306/pagosbd";
+     private static final String USUARIO = "Alumnos";
+     private static final String CLAVE = "alumnos2025";
 
     public static Connection obtenerConexion() {
         Connection conexion = null;

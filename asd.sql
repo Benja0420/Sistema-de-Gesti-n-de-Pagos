@@ -6,7 +6,7 @@ USE pagosbd;
 
 -- Crear la tabla 'empleado'
 CREATE TABLE empleado (
-    IdEmpleado INT AUTO_INCREMENT PRIMARY KEY,
+    IdEmpleado INT PRIMARY KEY,
     nombreEmpleado VARCHAR(100) NOT NULL,
     fechaInicio DATE NOT NULL,                 
     fechaTermino DATE NOT NULL,                     

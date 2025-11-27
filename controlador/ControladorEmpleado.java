@@ -28,24 +28,39 @@ public class ControladorEmpleado {
             throw new IllegalArgumentException("Todos los campos de texto son obligatorios.");
         }
 
-        String sql = "INSERT INTO empleado (nombreEmpleado, fechaInicio, fechaTermino, tipoContrato, planSalud, afp) VALUES (?, ?, ?, ?, ?, ?)";
-        
-        try (Connection conexion = Dao.obtenerConexion();
-             PreparedStatement statement = conexion.prepareStatement(sql)) {
+        try (Connection conexion = Dao.obtenerConexion()) {
+            int nuevoId = obtenerProximoId(conexion);
             
-            statement.setString(1, nombreEmpleado);
-            statement.setString(2, fechaInicio);
-            statement.setString(3, fechaTermino);
-            statement.setString(4, tipoContrato);
-            statement.setBoolean(5, planSalud);
-            statement.setBoolean(6, afp);
+            String sql = "INSERT INTO empleado (IdEmpleado, nombreEmpleado, fechaInicio, fechaTermino, tipoContrato, planSalud, afp) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            
+            try (PreparedStatement statement = conexion.prepareStatement(sql)) {
+                statement.setInt(1, nuevoId);
+                statement.setString(2, nombreEmpleado);
+                statement.setString(3, fechaInicio);
+                statement.setString(4, fechaTermino);
+                statement.setString(5, tipoContrato);
+                statement.setBoolean(6, planSalud);
+                statement.setBoolean(7, afp);
 
-            int filasAfectadas = statement.executeUpdate();
-            if (filasAfectadas > 0) {
-                listarEmpleados();
-                return true;
+                int filasAfectadas = statement.executeUpdate();
+                if (filasAfectadas > 0) {
+                    listarEmpleados();
+                    return true;
+                }
+                return false;
             }
-            return false;
+        }
+    }
+
+    private int obtenerProximoId(Connection conexion) throws SQLException {
+        String sql = "SELECT MAX(IdEmpleado) as maxId FROM empleado";
+        try (Statement statement = conexion.createStatement();
+             ResultSet resultado = statement.executeQuery(sql)) {
+            if (resultado.next()) {
+                int maxId = resultado.getInt("maxId");
+                return maxId + 1;
+            }
+            return 1;
         }
     }
 
