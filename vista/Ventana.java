@@ -2,275 +2,355 @@ package vista;
 
 import controlador.ControladorEmpleado;
 import modelo.Empleado;
-import java.awt.*;
-import java.awt.event.*;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.JTextField;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.SQLException;
 
-public class Ventana extends Frame {
+public class Ventana extends JFrame {
 
-    // Componentes de la interfaz gráfica
-    private Label lblTitulo;
-    private Label lblIdEmpleado, lblNombreEmpleado, lblFechaInicio, lblFechaTermino, lblTipoContrato;
-    private JTextField txtIdEmpleado, txtNombreEmpleado, txtFechaInicio, txtFechaTermino;
-    private Choice choiceTipoContrato;
-    private Checkbox chkPlanSalud, chkAFP;
-    private Button btnAgregar, btnConsultar, btnModificar, btnEliminar;
-    private JTable tablaRegistrosEmpleado;
+    // Componentes Swing
+    private JLabel lblTitulo;
+    private JLabel lblNombre, lblFechaInicio, lblFechaTermino, lblTipoContrato;
+    private JLabel lblBuscarId;
+    
+    private JTextField txtNombre, txtFechaInicio, txtFechaTermino;
+    private JTextField txtBuscarId;
+    
+    private JComboBox<String> cmbTipoContrato;
+    private JCheckBox chkPlanSalud, chkAFP;
+    
+    private JButton btnAgregar, btnConsultar, btnModificar, btnEliminar;
+    
+    private JTable tablaEmpleados;
     private DefaultTableModel modeloTabla;
     private JScrollPane scrollPane;
+    
     private ControladorEmpleado controlador;
 
-    // Constructor de la ventana
     public Ventana() {
-        setLayout(null);
-        setSize(1200, 600);
         setTitle("Sistema de Gestión de Pagos - TECNOQUIM");
-        setBackground(new Color(250, 128, 114)); // Color salmón
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(1200, 620);
         setLocationRelativeTo(null);
+        setResizable(true);
         
-        // Crear el modelo de tabla
+        // Crear modelo de tabla
         String[] columnas = {"ID", "Nombre", "Fecha Inicio", "Fecha Término", "Tipo Contrato", "Plan Salud", "AFP"};
         modeloTabla = new DefaultTableModel(columnas, 0);
         
-        // Crear el controlador
+        // Crear controlador
         controlador = new ControladorEmpleado(modeloTabla);
         
-        configurarCamposDeEntradas();
-        configurarBotonesDeEventos();
-        configurarTablaDeDatos();
+        // Configurar panel principal
+        JPanel panelPrincipal = new JPanel(null);
+        panelPrincipal.setBackground(new Color(250, 128, 114)); // Color salmón
+        setContentPane(panelPrincipal);
         
-        // Cargar los registros al iniciar
-        controlador.listarEmpleados();
-        
-        // Evento para cerrar la ventana
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                System.exit(0);
-            }
-        });
+        configurarComponentes();
+        configurarEventos();
+        cargarEmpleados();
     }
 
-    // Método de configuración para los campos de entrada
-    private void configurarCamposDeEntradas() {
-        lblTitulo = new Label("SISTEMA DE GESTIÓN DE PAGOS - TECNOQUIM");
+    private void configurarComponentes() {
+        JPanel panel = (JPanel) getContentPane();
+        
+        // Título
+        lblTitulo = new JLabel("SISTEMA DE GESTIÓN DE PAGOS - TECNOQUIM");
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 20));
-        lblTitulo.setAlignment(Label.CENTER);
-        lblTitulo.setBounds(50, 70, 1100, 30);
-        add(lblTitulo);
-
-        // ID Empleado
-        lblIdEmpleado = new Label("ID Empleado:");
-        lblIdEmpleado.setBounds(50, 120, 120, 20);
-        add(lblIdEmpleado);
-        txtIdEmpleado = new JTextField();
-        txtIdEmpleado.setBounds(50, 145, 200, 25);
-        txtIdEmpleado.setBackground(Color.WHITE);
-        add(txtIdEmpleado);
-
-        // Nombre Empleado
-        lblNombreEmpleado = new Label("Nombre Empleado:");
-        lblNombreEmpleado.setBounds(50, 180, 150, 20);
-        add(lblNombreEmpleado);
-        txtNombreEmpleado = new JTextField();
-        txtNombreEmpleado.setBounds(50, 205, 200, 25);
-        txtNombreEmpleado.setBackground(Color.WHITE);
-        add(txtNombreEmpleado);
-
+        lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
+        lblTitulo.setBounds(50, 20, 1100, 30);
+        panel.add(lblTitulo);
+        
+        // Sección: Búsqueda por ID
+        lblBuscarId = new JLabel("Buscar por ID:");
+        lblBuscarId.setBounds(50, 70, 120, 20);
+        panel.add(lblBuscarId);
+        
+        txtBuscarId = new JTextField();
+        txtBuscarId.setBounds(50, 95, 200, 25);
+        txtBuscarId.setBackground(Color.WHITE);
+        panel.add(txtBuscarId);
+        
+        // Sección: Formulario de registro
+        lblNombre = new JLabel("Nombre Empleado:");
+        lblNombre.setBounds(50, 135, 150, 20);
+        panel.add(lblNombre);
+        
+        txtNombre = new JTextField();
+        txtNombre.setBounds(50, 160, 200, 25);
+        txtNombre.setBackground(Color.WHITE);
+        panel.add(txtNombre);
+        
         // Fecha Inicio
-        lblFechaInicio = new Label("Fecha Inicio (yyyy-MM-dd):");
-        lblFechaInicio.setBounds(50, 240, 150, 20);
-        add(lblFechaInicio);
+        lblFechaInicio = new JLabel("Fecha Inicio (yyyy-MM-dd):");
+        lblFechaInicio.setBounds(50, 195, 150, 20);
+        panel.add(lblFechaInicio);
+        
         txtFechaInicio = new JTextField();
-        txtFechaInicio.setBounds(50, 265, 200, 25);
+        txtFechaInicio.setBounds(50, 220, 200, 25);
         txtFechaInicio.setBackground(Color.WHITE);
-        txtFechaInicio.setToolTipText("yyyy-MM-dd");
-        add(txtFechaInicio);
-
+        panel.add(txtFechaInicio);
+        
         // Fecha Término
-        lblFechaTermino = new Label("Fecha Término (yyyy-MM-dd):");
-        lblFechaTermino.setBounds(50, 300, 150, 20);
-        add(lblFechaTermino);
+        lblFechaTermino = new JLabel("Fecha Término (yyyy-MM-dd):");
+        lblFechaTermino.setBounds(50, 255, 150, 20);
+        panel.add(lblFechaTermino);
+        
         txtFechaTermino = new JTextField();
-        txtFechaTermino.setBounds(50, 325, 200, 25);
+        txtFechaTermino.setBounds(50, 280, 200, 25);
         txtFechaTermino.setBackground(Color.WHITE);
-        txtFechaTermino.setToolTipText("yyyy-MM-dd");
-        add(txtFechaTermino);
-
+        panel.add(txtFechaTermino);
+        
         // Tipo Contrato
-        lblTipoContrato = new Label("Tipo Contrato:");
-        lblTipoContrato.setBounds(50, 360, 120, 20);
-        add(lblTipoContrato);
-        choiceTipoContrato = new Choice();
-        choiceTipoContrato.add("Indefinido");
-        choiceTipoContrato.add("Plazo Fijo");
-        choiceTipoContrato.add("Honorarios");
-        choiceTipoContrato.setBounds(50, 385, 200, 25);
-        add(choiceTipoContrato);
-
+        lblTipoContrato = new JLabel("Tipo Contrato:");
+        lblTipoContrato.setBounds(50, 315, 120, 20);
+        panel.add(lblTipoContrato);
+        
+        cmbTipoContrato = new JComboBox<>(new String[]{"Indefinido", "Plazo Fijo", "Honorarios"});
+        cmbTipoContrato.setBounds(50, 340, 200, 25);
+        panel.add(cmbTipoContrato);
+        
         // Checkboxes
-        chkPlanSalud = new Checkbox("Plan de Salud");
-        chkPlanSalud.setBounds(50, 420, 150, 20);
-        add(chkPlanSalud);
-        chkAFP = new Checkbox("AFP");
-        chkAFP.setBounds(50, 445, 100, 20);
-        add(chkAFP);
-    }
-
-    // Método para configurar la tabla de datos
-    private void configurarTablaDeDatos() {
-        tablaRegistrosEmpleado = new JTable(modeloTabla);
-        tablaRegistrosEmpleado.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        scrollPane = new JScrollPane(tablaRegistrosEmpleado);
-        scrollPane.setBounds(290, 120, 880, 340);
-        add(scrollPane);
-
-        // Selección de fila para rellenar inputs
-        tablaRegistrosEmpleado.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tablaRegistrosEmpleado.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting() && tablaRegistrosEmpleado.getSelectedRow() != -1) {
-                int row = tablaRegistrosEmpleado.getSelectedRow();
-                txtIdEmpleado.setText(modeloTabla.getValueAt(row, 0).toString());
-                txtNombreEmpleado.setText(modeloTabla.getValueAt(row, 1).toString());
+        chkPlanSalud = new JCheckBox("Plan de Salud");
+        chkPlanSalud.setBounds(50, 375, 150, 20);
+        chkPlanSalud.setBackground(new Color(250, 128, 114));
+        panel.add(chkPlanSalud);
+        
+        chkAFP = new JCheckBox("AFP");
+        chkAFP.setBounds(50, 400, 100, 20);
+        chkAFP.setBackground(new Color(250, 128, 114));
+        panel.add(chkAFP);
+        
+        // Tabla de empleados
+        tablaEmpleados = new JTable(modeloTabla);
+        tablaEmpleados.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        tablaEmpleados.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
+        // Listener para seleccionar fila y rellenar formulario (solo para edición)
+        tablaEmpleados.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && tablaEmpleados.getSelectedRow() != -1) {
+                int row = tablaEmpleados.getSelectedRow();
+                int idSeleccionado = (Integer) modeloTabla.getValueAt(row, 0);
+                txtBuscarId.setText(String.valueOf(idSeleccionado));
+                
+                txtNombre.setText(modeloTabla.getValueAt(row, 1).toString());
                 txtFechaInicio.setText(modeloTabla.getValueAt(row, 2).toString());
                 txtFechaTermino.setText(modeloTabla.getValueAt(row, 3).toString());
-                choiceTipoContrato.select(modeloTabla.getValueAt(row, 4).toString());
-                chkPlanSalud.setState("Sí".equals(modeloTabla.getValueAt(row, 5).toString()));
-                chkAFP.setState("Sí".equals(modeloTabla.getValueAt(row, 6).toString()));
+                cmbTipoContrato.setSelectedItem(modeloTabla.getValueAt(row, 4).toString());
+                chkPlanSalud.setSelected("Sí".equals(modeloTabla.getValueAt(row, 5).toString()));
+                chkAFP.setSelected("Sí".equals(modeloTabla.getValueAt(row, 6).toString()));
             }
         });
+        
+        scrollPane = new JScrollPane(tablaEmpleados);
+        scrollPane.setBounds(290, 70, 880, 390);
+        panel.add(scrollPane);
+        
+        // Botones
+        btnAgregar = new JButton("Agregar");
+        btnAgregar.setBounds(50, 450, 100, 35);
+        panel.add(btnAgregar);
+        
+        btnConsultar = new JButton("Consultar");
+        btnConsultar.setBounds(160, 450, 100, 35);
+        panel.add(btnConsultar);
+        
+        btnModificar = new JButton("Modificar");
+        btnModificar.setBounds(50, 495, 100, 35);
+        panel.add(btnModificar);
+        
+        btnEliminar = new JButton("Eliminar");
+        btnEliminar.setBounds(160, 495, 100, 35);
+        panel.add(btnEliminar);
     }
 
-    // Método para configurar los botones y sus eventos
-    private void configurarBotonesDeEventos() {
-        btnAgregar = new Button("Agregar");
-        btnAgregar.setBounds(50, 490, 100, 35);
+    private void configurarEventos() {
         btnAgregar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 agregarEmpleado();
-                limpiarCampos();
             }
         });
-        add(btnAgregar);
-
-        btnConsultar = new Button("Consultar");
-        btnConsultar.setBounds(160, 490, 100, 35);
+        
         btnConsultar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 consultarEmpleado();
-                limpiarCampos();
             }
         });
-        add(btnConsultar);
-
-        btnModificar = new Button("Modificar");
-        btnModificar.setBounds(50, 530, 100, 35);
+        
         btnModificar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 modificarEmpleado();
-                limpiarCampos();
             }
         });
-        add(btnModificar);
-
-        btnEliminar = new Button("Eliminar");
-        btnEliminar.setBounds(160, 530, 100, 35);
+        
         btnEliminar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 eliminarEmpleado();
-                limpiarCampos();
             }
         });
-        add(btnEliminar);
     }
 
-    // Método para agregar un empleado
     private void agregarEmpleado() {
         try {
-            int idEmpleado = Integer.parseInt(txtIdEmpleado.getText());
-            String nombreEmpleado = txtNombreEmpleado.getText();
-            String fechaInicio = txtFechaInicio.getText();
-            String fechaTermino = txtFechaTermino.getText();
-            String tipoContrato = choiceTipoContrato.getSelectedItem();
-            boolean planSalud = chkPlanSalud.getState();
-            boolean afp = chkAFP.getState();
-
-            controlador.agregarEmpleado(idEmpleado, nombreEmpleado, fechaInicio, fechaTermino, 
-                                       tipoContrato, planSalud, afp);
-            limpiarCampos();
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "El ID debe ser un número entero", 
+            String nombre = txtNombre.getText().trim();
+            String fechaInicio = txtFechaInicio.getText().trim();
+            String fechaTermino = txtFechaTermino.getText().trim();
+            String tipoContrato = (String) cmbTipoContrato.getSelectedItem();
+            boolean planSalud = chkPlanSalud.isSelected();
+            boolean afp = chkAFP.isSelected();
+            
+            if (controlador.agregarEmpleado(nombre, fechaInicio, fechaTermino, 
+                                           tipoContrato, planSalud, afp)) {
+                JOptionPane.showMessageDialog(this, "Empleado agregado exitosamente", 
+                        "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                limpiarFormulario();
+            } else {
+                JOptionPane.showMessageDialog(this, "No se pudo agregar el empleado", 
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), 
+                    "Error de Validación", JOptionPane.WARNING_MESSAGE);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error en la base de datos: " + e.getMessage(), 
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // Método para consultar un empleado
     private void consultarEmpleado() {
         try {
-            int idEmpleado = Integer.parseInt(txtIdEmpleado.getText());
-            Empleado empleado = controlador.consultarEmpleado(idEmpleado);
+            String idStr = txtBuscarId.getText().trim();
+            if (idStr.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Ingrese un ID para buscar", 
+                        "Advertencia", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            
+            int id = Integer.parseInt(idStr);
+            Empleado empleado = controlador.consultarEmpleado(id);
             
             if (empleado != null) {
-                txtNombreEmpleado.setText(empleado.getNombreEmpleado());
+                txtNombre.setText(empleado.getNombreEmpleado());
                 txtFechaInicio.setText(empleado.getFechaInicio().toString());
                 txtFechaTermino.setText(empleado.getFechaTermino().toString());
-                choiceTipoContrato.select(empleado.getTipoContrato());
-                chkPlanSalud.setState(empleado.isPlanSalud());
-                chkAFP.setState(empleado.isAfp());
+                cmbTipoContrato.setSelectedItem(empleado.getTipoContrato());
+                chkPlanSalud.setSelected(empleado.isPlanSalud());
+                chkAFP.setSelected(empleado.isAfp());
+                
+                JOptionPane.showMessageDialog(this, "Empleado encontrado", 
+                        "Búsqueda", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Empleado no encontrado", 
+                        "Búsqueda", JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "El ID debe ser un número entero", 
+            JOptionPane.showMessageDialog(this, "El ID debe ser un número entero", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error en la base de datos: " + e.getMessage(), 
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // Método para modificar un empleado
     private void modificarEmpleado() {
         try {
-            int idEmpleado = Integer.parseInt(txtIdEmpleado.getText());
-            String nombreEmpleado = txtNombreEmpleado.getText();
-            String fechaInicio = txtFechaInicio.getText();
-            String fechaTermino = txtFechaTermino.getText();
-            String tipoContrato = choiceTipoContrato.getSelectedItem();
-            boolean planSalud = chkPlanSalud.getState();
-            boolean afp = chkAFP.getState();
-
-            controlador.modificarEmpleado(idEmpleado, nombreEmpleado, fechaInicio, fechaTermino, 
-                                         tipoContrato, planSalud, afp);
-            limpiarCampos();
+            String idStr = txtBuscarId.getText().trim();
+            if (idStr.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Seleccione un empleado o ingrese su ID", 
+                        "Advertencia", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            
+            int id = Integer.parseInt(idStr);
+            String nombre = txtNombre.getText().trim();
+            String fechaInicio = txtFechaInicio.getText().trim();
+            String fechaTermino = txtFechaTermino.getText().trim();
+            String tipoContrato = (String) cmbTipoContrato.getSelectedItem();
+            boolean planSalud = chkPlanSalud.isSelected();
+            boolean afp = chkAFP.isSelected();
+            
+            if (controlador.modificarEmpleado(id, nombre, fechaInicio, fechaTermino, 
+                                             tipoContrato, planSalud, afp)) {
+                JOptionPane.showMessageDialog(this, "Empleado modificado exitosamente", 
+                        "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                limpiarFormulario();
+            } else {
+                JOptionPane.showMessageDialog(this, "No se encontró el empleado para modificar", 
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), 
+                    "Error de Validación", JOptionPane.WARNING_MESSAGE);
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "El ID debe ser un número entero", 
+            JOptionPane.showMessageDialog(this, "El ID debe ser un número entero", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error en la base de datos: " + e.getMessage(), 
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // Método para eliminar un empleado
     private void eliminarEmpleado() {
         try {
-            int idEmpleado = Integer.parseInt(txtIdEmpleado.getText());
-            controlador.eliminarEmpleado(idEmpleado);
-            limpiarCampos();
+            String idStr = txtBuscarId.getText().trim();
+            if (idStr.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Seleccione un empleado o ingrese su ID", 
+                        "Advertencia", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            
+            int id = Integer.parseInt(idStr);
+            
+            int confirmacion = JOptionPane.showConfirmDialog(this, 
+                    "¿Está seguro de eliminar el empleado con ID " + id + "?", 
+                    "Confirmar eliminación", JOptionPane.YES_NO_OPTION);
+            
+            if (confirmacion == JOptionPane.YES_OPTION) {
+                if (controlador.eliminarEmpleado(id)) {
+                    JOptionPane.showMessageDialog(this, "Empleado eliminado exitosamente", 
+                            "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                    limpiarFormulario();
+                } else {
+                    JOptionPane.showMessageDialog(this, "No se encontró el empleado para eliminar", 
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "El ID debe ser un número entero", 
+            JOptionPane.showMessageDialog(this, "El ID debe ser un número entero", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error en la base de datos: " + e.getMessage(), 
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // Método para limpiar los campos de entrada
-    private void limpiarCampos() {
-        txtIdEmpleado.setText("");
-        txtNombreEmpleado.setText("");
+    private void cargarEmpleados() {
+        try {
+            controlador.listarEmpleados();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error al cargar empleados: " + e.getMessage(), 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void limpiarFormulario() {
+        txtBuscarId.setText("");
+        txtNombre.setText("");
         txtFechaInicio.setText("");
         txtFechaTermino.setText("");
-        choiceTipoContrato.select(0);
-        chkPlanSalud.setState(false);
-        chkAFP.setState(false);
+        cmbTipoContrato.setSelectedIndex(0);
+        chkPlanSalud.setSelected(false);
+        chkAFP.setSelected(false);
+        tablaEmpleados.clearSelection();
+        cargarEmpleados();
     }
 }
 

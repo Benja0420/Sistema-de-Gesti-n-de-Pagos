@@ -6,11 +6,11 @@ USE pagosbd;
 
 -- Crear la tabla 'empleado'
 CREATE TABLE empleado (
-    IdEmpleado INT PRIMARY KEY,
-    nombreEmpleado VARCHAR(100),
-    fechaInicio DATE,                 
-    fechaTermino DATE,                     
-    tipoContrato VARCHAR(50),        
-    planSalud BOOLEAN,      
-    afp BOOLEAN            
+    IdEmpleado INT AUTO_INCREMENT PRIMARY KEY,
+    nombreEmpleado VARCHAR(100) NOT NULL,
+    fechaInicio DATE NOT NULL,                 
+    fechaTermino DATE NOT NULL,                     
+    tipoContrato VARCHAR(50) NOT NULL,        
+    planSalud BOOLEAN DEFAULT FALSE,      
+    afp BOOLEAN DEFAULT FALSE            
 );
