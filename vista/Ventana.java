@@ -47,7 +47,7 @@ public class Ventana extends JFrame {
         
         // Configurar panel principal
         JPanel panelPrincipal = new JPanel(null);
-        panelPrincipal.setBackground(new Color(250, 128, 114)); // Color salmón
+        panelPrincipal.setBackground(new Color(250, 128, 114));
         setContentPane(panelPrincipal);
         
         configurarComponentes();
@@ -130,7 +130,7 @@ public class Ventana extends JFrame {
         tablaEmpleados.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         tablaEmpleados.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
-        // Listener para seleccionar fila y rellenar formulario (solo para edición)
+        // Listener para seleccionar fila y rellenar formulario
         tablaEmpleados.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && tablaEmpleados.getSelectedRow() != -1) {
                 int row = tablaEmpleados.getSelectedRow();
