@@ -289,9 +289,6 @@ public class Ventana extends JFrame {
         } catch (IllegalArgumentException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(), 
                     "Error de Validación", JOptionPane.WARNING_MESSAGE);
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "El ID debe ser un número entero", 
-                    "Error", JOptionPane.ERROR_MESSAGE);
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Error en la base de datos: " + e.getMessage(), 
                     "Error", JOptionPane.ERROR_MESSAGE);
